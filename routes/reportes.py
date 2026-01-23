@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, jsonify, send_file
 from conexion_db import conectar
 import sqlite3
 import datetime, io
-import pandas as pd
 from routes.auth import login_required
+from openpyxl import Workbook
 
 reportes_bp = Blueprint("reportes", __name__)
 
@@ -27,12 +27,17 @@ def api_reporte(anio):
     cursor = conexion.cursor()
 
     # Total IIEE públicas
-    cursor.execute("SELECT COUNT(DISTINCT id) AS total FROM datos_ie WHERE gestion='ESTATAL'")
+    cursor.execute("""
+        SELECT COUNT(DISTINCT id) AS total 
+        FROM datos_ie 
+        WHERE gestion='ESTATAL'
+    """)
     modalidad_estado = dict(cursor.fetchone())
 
-    # Validados/Observados/Omisos
+    # Validados / Observados / Omisos
     cursor.execute("""
-        SELECT COALESCE(e.estado, 'Omiso') AS estado, COUNT(DISTINCT d.id) AS total
+        SELECT COALESCE(e.estado, 'Omiso') AS estado,
+               COUNT(DISTINCT d.id) AS total
         FROM datos_ie d
         LEFT JOIN expediente e
             ON e.datos_ie_id = d.id
@@ -64,6 +69,7 @@ def api_reporte(anio):
         "historico": historico
     })
 
+
 @reportes_bp.route("/reporte/exportar/<int:anio>")
 @login_required
 def exportar_reporte(anio):
@@ -72,41 +78,70 @@ def exportar_reporte(anio):
         return "❌ Error al conectar con la base de datos", 500
 
     conexion.row_factory = sqlite3.Row
-    with conexion:
-        cursor = conexion.cursor()
-        cursor.execute("""
-            SELECT 
-                e.fecha_registro,
-                d.codigo_local,
-                d.institucion_educativa,
-                d.modalidad,
-                e.num_expediente,
-                e.tipo_atencion,
-                CASE 
-                    WHEN e.anio_inicio = e.anio_fin THEN e.anio_inicio
-                    ELSE e.anio_inicio || '-' || e.anio_fin
-                END AS periodo,
-                e.nombre_director,
-                e.genero,
-                e.estado,
-                e.n_resolucion,
-                e.fecha_emision,
-                e.correo,
-                e.oficio_ie,
-                e.detalle
-            FROM datos_ie d
-            JOIN expediente e 
-                ON e.datos_ie_id = d.id 
-        """)
-        rows = [dict(row) for row in cursor.fetchall()]
+    cursor = conexion.cursor()
 
-    # Crear DataFrame
-    df = pd.DataFrame(rows)
+    cursor.execute("""
+        SELECT 
+            e.fecha_registro,
+            d.codigo_local,
+            d.institucion_educativa,
+            d.modalidad,
+            e.num_expediente,
+            e.tipo_atencion,
+            CASE 
+                WHEN e.anio_inicio = e.anio_fin THEN e.anio_inicio
+                ELSE e.anio_inicio || '-' || e.anio_fin
+            END AS periodo,
+            e.nombre_director,
+            e.genero,
+            e.estado,
+            e.n_resolucion,
+            e.fecha_emision,
+            e.correo,
+            e.oficio_ie,
+            e.detalle
+        FROM datos_ie d
+        JOIN expediente e ON e.datos_ie_id = d.id
+        ORDER BY d.institucion_educativa
+    """)
+    rows = cursor.fetchall()
+    cursor.close()
+    conexion.close()
 
-    # Guardar en memoria como Excel
+    # 📗 Crear Excel en memoria
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reporte"
+
+    headers = [
+        "Fecha Registro", "Código Local", "Institución Educativa", "Modalidad",
+        "N° Expediente", "Tipo Atención", "Periodo", "Director",
+        "Género", "Estado", "Resolución", "Fecha Emisión",
+        "Correo", "Oficio IE", "Detalle"
+    ]
+    ws.append(headers)
+
+    for r in rows:
+        ws.append([
+            r["fecha_registro"],
+            r["codigo_local"],
+            r["institucion_educativa"],
+            r["modalidad"],
+            r["num_expediente"],
+            r["tipo_atencion"],
+            r["periodo"],
+            r["nombre_director"],
+            r["genero"],
+            r["estado"],
+            r["n_resolucion"],
+            r["fecha_emision"],
+            r["correo"],
+            r["oficio_ie"],
+            r["detalle"],
+        ])
+
     output = io.BytesIO()
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        df.to_excel(writer, index=False, sheet_name="Reporte")
+    wb.save(output)
     output.seek(0)
 
     return send_file(
