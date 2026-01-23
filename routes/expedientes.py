@@ -289,11 +289,17 @@ def generar_oficio(expediente_id):
     if not expediente:
         return "Expediente no encontrado", 404
 
-    plantilla = (
-        "static/plantillas/plantilla_oficio_validacion.docx"
-        if expediente["estado"] == "Validado"
-        else "static/plantillas/plantilla_oficio_observacion.docx"
-    )
+    if expediente["estado"] == "Validado":
+        plantilla_relativa = "static/plantillas/plantilla_oficio_validacion.docx"
+    else:
+        plantilla_relativa = "static/plantillas/plantilla_oficio_observacion.docx"
+
+    plantilla = os.path.join(current_app.root_path, plantilla_relativa)
+
+    # (opcional pero recomendado)
+    if not os.path.exists(plantilla):
+        return f"No se encontró la plantilla: {plantilla}", 500
+
     doc = Document(plantilla)
 
     map_modalidad = {
@@ -336,6 +342,9 @@ def generar_oficio(expediente_id):
     return send_file(
         file_stream,
         as_attachment=True,
-        download_name=f"Proyecto de Oficio del Exp. N° {expediente['num_expediente']} - {modalidad_data["corto"]} {expediente['institucion_educativa']}.docx",
+        download_name=(
+            f"Proyecto de Oficio del Exp. N° {expediente['num_expediente']} - "
+            f"{modalidad_data['corto']} {expediente['institucion_educativa']}.docx"
+        ),
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
