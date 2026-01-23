@@ -1,0 +1,109 @@
+<!-- registro_modal.html -->
+<div class="modal fade" id="modalRegistrar" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content rounded-4 shadow">
+
+      <!-- Header -->
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalTitulo">
+          <i class="fa-solid fa-plus me-2"></i> Registro - {{ modalidad_map.get(datos_ie.modalidad, datos_ie.modalidad) }} {{ datos_ie.institucion_educativa }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Form -->
+      <form id="formResolucion" action="{{ url_for('expedientes.guardar_resolucion') }}" method="POST" enctype="multipart/form-data">
+        <div class="modal-body px-4 py-3">
+          <input type="hidden" name="datos_ie_id" value="{{ datos_ie.id }}">
+          <input type="hidden" name="codigo_local" value="{{ datos_ie.codigo_local }}">
+          <input type="hidden" name="modalidad" value="{{ datos_ie.modalidad }}">
+          <input type="hidden" name="expediente_id" id="expediente_id">
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Director</label>
+              <input type="text" name="director" id="director" class="form-control" placeholder="Nombres y Apellidos" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Género</label>
+              <select name="genero" id="genero" class="form-select" required>
+                <option value="" disabled>Seleccionar</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Expediente</label>
+              <input type="text" name="expediente" id="num_expediente" class="form-control" placeholder="0101741-2026" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tipo de atención</label>
+              <select name="tipo_atencion" id="tipo_atencion" class="form-select" required>
+                <option value="" disabled>Seleccionar</option>
+                <option value="Reconocimiento">Reconocimiento</option>
+                <option value="Actualización">Actualización</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Periodo</label>
+              <input type="text" name="anio_inicio" id="anio_inicio" class="form-control" placeholder="2026" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Estado</label>
+              <select name="estado" id="estado" class="form-select" required>
+                <option value="" disabled>Seleccionar</option>
+                <option value="Validado">Validado</option>
+                <option value="Observado">Observado</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Resolución Directoral</label>
+              <input type="text" name="resolucion_directoral" id="resolucion" class="form-control" placeholder="00750-2026" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Fecha de emisión</label>
+              <input type="date" name="fecha_emision" id="fecha_emision" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Correo</label>
+              <input type="email" name="correo" id="correo" class="form-control" placeholder="ie@gmail.com">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Oficio</label>
+              <input type="text" name="oficio" id="oficio" class="form-control" placeholder="OFICIO N° 246-2026/D-I.E. N° 1211" required>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Detalle</label>
+              <textarea name="detalle" id="detalle" class="form-control" rows="1" placeholder="Motivo de la observación"></textarea>
+            </div>
+            
+            <div class="col-md-2">
+              <label class="form-label">Desde página</label>
+              <input type="number" name="pagina_inicio" class="form-control" min="1" placeholder="4">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Hasta página</label>
+              <input type="number" name="pagina_fin" class="form-control" min="1" placeholder="6">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Subir R.D. de la I.E. (PDF)</label>
+              <input type="file" name="archivo_rd" class="form-control" accept="application/pdf">
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-save me-1"></i> Guardar
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+

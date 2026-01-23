@@ -1,0 +1,44 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+    <div class="container">
+        <!-- LOGO -->
+        <a class="navbar-brand" href="/reconocimiento">CONEI</a>
+
+        <!-- Botón hamburguesa -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Menú -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                {% if session.user_id %}
+                    <!-- Menú visible solo si inició sesión -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if pagina == 'reconocimiento' %}active{% endif %}" href="/reconocimiento/reconocimiento">CONEI</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if pagina == 'reporte' %}active{% endif %}" href="/reportes/reporte">Reporte</a>
+                    </li>
+                    <!-- Usuario y Logout -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-user-astronaut"></i> {{ session.user_name }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar sesión</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <!-- Menú visible solo si NO ha iniciado sesión -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Iniciar sesión</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+

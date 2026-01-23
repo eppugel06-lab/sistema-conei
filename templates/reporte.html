@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Reporte{% endblock %}
+
+{% block content %}
+
+    <h2 class="mb-4"><i class="fa-solid fa-chart-simple"></i> Reporte de Instituciones Educativas</h2>
+
+    <!-- Selector de Año -->
+    <div class="d-flex mb-4">
+        <label for="anioSelect" class="form-label fw-bold me-2">Seleccione Año:</label>
+        <select id="anioSelect" class="form-select w-auto"></select>
+    </div>
+
+    <!-- Botón Descargar -->
+    <div class="mb-3">
+        <a id="btnDescargar" href="#" class="btn btn-success">
+            <i class="fa-solid fa-file-excel"></i> Descargar Excel
+        </a>
+    </div>
+
+    <!-- Cards con datos generales -->
+    <div class="row g-3 text-center mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm rounded-4 p-3 h-100 hover-card">
+                <h6 class="fw-bold">Total IIEE Estatales</h6>
+                <h2 id="totalIE" class="text-primary">0</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm rounded-4 p-3 h-100 hover-card">
+                <h6 class="fw-bold">Validados</h6>
+                <h2 id="validados" class="text-success">0</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm rounded-4 p-3 h-100 hover-card">
+                <h6 class="fw-bold">Observados</h6>
+                <h2 id="observados" class="text-warning">0</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm rounded-4 p-3 h-100 hover-card">
+                <h6 class="fw-bold">Omisos</h6>
+                <h2 id="omisos" class="text-danger">0</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card p-3 shadow-sm rounded-4 hover-card">
+                <h6 class="text-center fw-bold mb-3">Validados vs Observados</h6>
+                <canvas id="estadoChart" style="max-height: 220px;"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3 shadow-sm rounded-4 hover-card">
+                <h6 id="titulo-historico" class="text-center fw-bold mb-3"></h6>
+                <canvas id="historicoChart" style="max-height: 220px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

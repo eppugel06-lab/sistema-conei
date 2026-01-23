@@ -1,0 +1,113 @@
+body {
+  background-color: #f2f2f200; /* Gris muy claro */
+  font-family: sans-serif;
+}
+
+#Expedientes {
+    padding: 16px;
+}
+
+/* Estilos timeline_modal*/
+
+.timeline-container {
+  position: relative;
+  margin-left: 30px;
+  border-left: 3px solid #dc3545;
+  padding-left: 20px;
+}
+
+.timeline-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.timeline-dot {
+  width: 16px;
+  height: 16px;
+  background-color: #c82333;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #dc3545;
+}
+
+.timeline-year {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #b21f2d;
+}
+
+.timeline-item {
+  margin-bottom: 20px;
+}
+
+.timeline-card {
+  border-left: 4px solid #dc3545;
+  padding: 12px 15px;
+  border-radius: 6px;
+  background-color: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.timeline-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.timeline-card p {
+  margin-bottom: 4px;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+@media (max-width: 576px) {
+  .timeline-container {
+    margin-left: 20px;
+    padding-left: 15px;
+  }
+  .timeline-dot {
+    left: -12px;
+  }
+  .timeline-year {
+    font-size: 1rem;
+  }
+}
+
+.red700{
+  color: #842029;  
+}
+
+.ie-item:hover {
+  background-color: #f8f9fa;
+  transition: background-color 0.3s ease;
+}
+
+.text-orange-700{
+  color: #984c0c;
+}
+
+.bg-orange-700{
+  background-color: #984c0c;
+  color: white;
+}
+
+.ie-item:hover {
+  background-color: #f8f9fa;
+  transition: background-color 0.2s;
+}
+
+
+/* Estilos reporte graficos*/
+    .hover-card {
+        transition: all 0.3s ease-in-out;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.15);
+    }

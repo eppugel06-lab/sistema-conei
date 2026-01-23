@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+{% block title %}Detalle IE{% endblock %}
+
+{% block content %}
+  <div class="row gy-5">
+    <!-- COLUMNA IZQUIERDA -->
+    <div class="col-lg-3">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-4">
+          <h4 class="fw-bold text-center text-primary mb-2">
+            {{ modalidad_map.get(datos_ie.modalidad, datos_ie .modalidad) }} {{ datos_ie.institucion_educativa }}
+          </h4>
+          <p class="text-center text-muted small mb-4">
+            Código Local<br>
+            <span class="fw-semibold text-dark">{{ datos_ie.codigo_local }}</span>
+          </p>
+
+          <!-- DATOS GENERALES -->
+          <div class="mb-4">
+            <h6 class="text-muted text-uppercase small mb-3">📌 Datos Generales</h6>
+            <div class="row g-3 small">
+              <div class="col-12">
+                <label class="text-muted d-block">Modalidad</label>
+                <div class="fw-semibold">{{ datos_ie.modalidad }}</div>
+              </div>
+              <div class="col-12">
+                <label class="text-muted d-block">Gestión</label>
+                <div class="fw-semibold">{{ datos_ie.gestion }}</div>
+              </div>
+              <div class="col-12">
+                <label class="text-muted d-block">Tipo de Gestión</label>
+                <div class="fw-semibold">{{ datos_ie.tipo_gestion }}</div>
+              </div>
+              <div class="col-12">
+                <label class="text-muted d-block">Distrito</label>
+                <div class="fw-semibold">{{ datos_ie.distrito }}</div>
+              </div>
+              <div class="col-12">
+                <label class="text-muted d-block">REI</label>
+                <div class="fw-semibold">{{ datos_ie.rei }}</div>
+              </div>
+            </div>
+          </div>
+
+      <hr>
+
+      <!-- NIVELES EDUCATIVOS -->
+      <div>
+        <h6 class="text-muted text-uppercase small mb-3">🏫 Niveles Educativos</h6>
+        {% if niveles_nexus %}
+          <div class="list-group list-group-flush small">
+            {% for nivel in niveles_nexus %}
+              <div class="list-group-item px-0 border-0">
+                <label class="text-muted d-block">Nivel Educativo</label>
+                <div class="fw-semibold">{{ nivel.codigo_modular }} - {{ nivel.nivel_educativo }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small">No se encontraron niveles educativos.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- COLUMNA DERECHA -->
+    <div class="col-lg-9">
+
+    <!-- Sección Expedientes -->
+    <div class="mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+        <h5 class="fw-bold mb-0">
+          <i class="fa-solid fa-folder-open text-primary me-2"></i> Expedientes
+        </h5>
+        <button type="button" 
+                class="btn btn-primary btn-sm rounded-pill px-3" 
+                data-bs-toggle="modal" 
+                data-bs-target="#modalRegistrar">
+          <i class="fa-solid fa-plus me-1"></i> Nuevo Registro
+        </button>
+      </div>
+
+      {% if expedientes %}
+        <div id="Expedientes" class="table-responsive shadow-sm rounded-4 overflow-hidden">
+          <table id="tablaExpedientes" class="table table-hover align-middle mb-0">
+            <thead class="bg-primary text-white small text-uppercase">
+              <tr>
+                <th><i class="fa-solid fa-file-lines me-2"></i>Expediente</th>
+                <th><i class="fa-solid fa-circle-dot me-2"></i>Tipo de atención</th>
+                <th><i class="fa-regular fa-calendar me-2"></i>Periodo</th>
+                <th><i class="fa-solid fa-info-circle me-2"></i>Estado</th>
+                <th class="text-center"><i class="fa-solid fa-gear"></i> Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for exp in expedientes %}
+                <tr>
+                  <td class="fw-semibold text-dark">
+                    <i class="fa-solid fa-file-lines me-1 text-primary"></i>
+                    {{ exp.num_expediente }}
+                  </td>
+                  <td class="text-muted">{{ exp.tipo_atencion }}</td>
+                  <td class="text-muted">{{ exp.anio_inicio ~ '-' ~ exp.anio_fin if exp.anio_inicio != exp.anio_fin else exp.anio_inicio }} </td>
+                  <td>
+                    <span class="badge rounded-pill px-3 py-1 
+                      {% if exp.estado == 'Validado' %}bg-success
+                      {% elif exp.estado == 'Observado' %}bg-warning text-dark
+                      {% else %}bg-secondary{% endif %}">
+                      <i class="fa-solid 
+                        {% if exp.estado == 'Validado' %}fa-circle-check
+                        {% elif exp.estado == 'Observado' %}fa-circle-exclamation
+                        {% else %}fa-clock{% endif %} me-1"></i>
+                      {{ exp.estado }}
+                    </span>
+                  </td>
+                  {% set anio_actual = anio_actual %}
+
+                  <td class="text-center">
+                      <!-- Ver resolución -->
+                      {% if exp.pdf_resolucion %}
+                        <a href="{{ url_for('static', filename='conei_pdf/' 
+                            ~ datos_ie.modalidad ~ '_' 
+                            ~ datos_ie.codigo_local ~ '/' 
+                            ~ exp.pdf_resolucion) }}"
+                            target="_blank"
+                            class="btn btn-sm btn-outline-danger rounded-circle me-1"
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            data-bs-title="Ver resolución">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </a>
+                      {% else %}
+                        <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="No adjunta Resolución">
+                          <button class="btn btn-sm btn-outline-secondary rounded-circle me-1" type="button" disabled>
+                              <i class="fa-solid fa-file-pdf"></i>
+                          </button>
+                        </span>
+                      {% endif %}
+
+                      {% if exp.fecha_emision %}
+                          {% if exp.vigente %}
+                            <!-- Editar habilitado -->
+                            <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="Editar expediente">
+                              <button class="btn btn-outline-primary btn-sm rounded-circle"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#modalRegistrar"
+                                      data-id="{{ exp.id }}"
+                                      data-modalidad="{{ datos_ie.modalidad }}"
+                                      data-codigo_local="{{ datos_ie.codigo_local }}"
+                                      data-director="{{ exp.nombre_director }}"
+                                      data-genero="{{ exp.genero }}"
+                                      data-expediente="{{ exp.num_expediente }}"
+                                      data-tipo="{{ exp.tipo_atencion }}"
+                                      data-anio_inicio ="{{ exp.anio_inicio }}"
+                                      data-estado="{{ exp.estado }}"
+                                      data-resolucion="{{ exp.n_resolucion }}"
+                                      data-fecha="{{ exp.fecha_emision.strftime('%Y-%m-%d') if exp.fecha_emision else '' }}"
+                                      data-correo="{{ exp.correo }}"
+                                      data-oficio="{{ exp.oficio_ie }}"
+                                      data-detalle="{{ exp.detalle }}"
+                                      data-archivo="{{ exp.pdf_resolucion }}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                              </button>
+                            </span>
+                          <!-- Botón Word -->
+                          <a href="{{ url_for('expedientes.generar_oficio', expediente_id=exp.id) }}" 
+                            class="btn btn-outline-primary btn-sm rounded-circle" 
+                            data-bs-toggle="tooltip" data-bs-placement="top" 
+                            data-bs-title="Generar oficio Word">
+                              <i class="fa-solid fa-file-word"></i>
+                          </a>
+
+                          <!-- Eliminar habilitado -->
+                          <form action="{{ url_for('expedientes.eliminar_expediente', expediente_id=exp.id) }}" 
+                                method="POST" style="display:inline;">
+                            <button type="submit" 
+                                    class="btn btn-outline-danger btn-sm rounded-circle" 
+                                    data-bs-toggle="tooltip" data-bs-placement="top" 
+                                    data-bs-title="Eliminar expediente"
+                                    onclick="return confirm('¿Seguro que quieres eliminar este expediente?')">
+                              <i class="fa-solid fa-trash"></i>
+                            </button>
+                          </form>
+                      {% else %}
+                          <!-- Editar deshabilitado -->
+                          <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="No editable: año anterior">
+                            <button class="btn btn-outline-secondary btn-sm rounded-circle" disabled>
+                              <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                          </span>
+
+                          <!-- Botón Word -->
+                          <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="No Oficio: año anterior">
+                            <a class="btn btn-outline-secondary btn-sm rounded-circle disabled"  aria-disabled="true">
+                                <i class="fa-solid fa-file-word"></i>
+                            </a>
+                          </span>
+
+                          <!-- Eliminar deshabilitado -->
+                          <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="No eliminable: año anterior">
+                            <button class="btn btn-outline-secondary btn-sm rounded-circle" disabled>
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                          </span> 
+                      {% endif %}
+                    {% endif %}
+                  </td>
+
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-warning mb-0">No hay expedientes registrados.</div>
+      {% endif %}
+    </div>
+
+
+      <!-- CONEI -->
+      <div>
+        <h5 class="fw-bold mb-2">
+          <i class="fa-solid fa-people-group text-primary me-2"></i> Composición del CONEI
+        </h5>
+        <p class="text-muted small mb-4">5.3.1. El CONEI se encuentra conformado por los siguientes integrantes:</p>
+
+        <div class="row g-4">
+          <!-- Tipos de Integrantes -->
+          <div class="col-md-5">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+              <div class="card-body">
+                
+                <!-- Encabezado -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="fw-semibold text-secondary mb-0">
+                    <i class="fa-solid fa-list-check me-2 text-secondary"></i>
+                    Tipos de Integrantes
+                  </h6>
+                  <button class="btn btn-outline-primary btn-sm rounded-pill px-2" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#modalConsideraciones">
+                    <i class="fa-solid fa-circle-info me-1"></i>Normativa
+                  </button>
+
+                </div>
+
+                <!-- Tabla -->
+                <div class="table-responsive small">
+                  <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Tipo</th>
+                        <th class="text-center">N°</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                          <td>Presidente</td>
+                          <td class="text-center">{{ presidente }}</td>
+                        </tr>
+
+                        <tr>
+                          <td>Subdirectores</td>
+                          <td class="text-center">
+                            {{ subdirectores if subdirectores > 0 else '<span class="text-muted">-</span>'|safe }}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>Estudiantes</td>
+                          <td class="text-center">
+                            {{ estudiantes if estudiantes > 0 else '<span class="text-muted">-</span>'|safe }}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>Familias</td>
+                          <td class="text-center">
+                            {{ familias if familias > 0 else '<span class="text-muted">-</span>'|safe }}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>Docentes</td>
+                          <td class="text-center">
+                            {{ docentes if docentes > 0 else '<span class="text-muted">-</span>'|safe }}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>Administrativo</td>
+                          <td class="text-center">
+                            {{ administrativo if administrativo > 0 else '<span class="text-muted">-</span>'|safe }}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>Exalumnos</td>
+                          <td class="text-center text-muted">Condicional</td>
+                        </tr>
+
+                        <tr>
+                          <td>Auxiliar</td>
+                          <td class="text-center">
+                            {{ auxiliar if auxiliar > 0 else '<span class="text-muted">-</span>'|safe }}
+                          </td>
+                        </tr>
+
+                        <!-- Total -->
+                        <tr class="fw-bold table-light">
+                          <td class="text-start">Total</td>
+                          <td class="text-center">{{ total_conei }}</td>
+                        </tr>
+                      </tbody>
+                  </table>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla unificada de cargos por nivel educativo -->
+          <div class="col-md-7">
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+              <div class="card-body">
+                <h6 class="fw-semibold text-secondary mb-3">
+                  <i class="fa-solid fa-chalkboard-user me-2"></i> Cargos por Nivel Educativo
+                </h6>
+                <div class="table-responsive">
+                  <table class="table table-sm table-hover align-middle text-center small">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="text-start align-middle">Cargo</th>
+                        {% for nivel in niveles_nexus %}
+                          <th>{{ nivel.nivel_educativo }}</th>
+                        {% endfor %}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% set campos = [
+                        ('Director I.E.', 'director_ie'),
+                        ('Subdirector I.E.', 'subdirector_ie'),
+                        ('Docente', 'docente'),
+                        ('Docente (Director I.E.)', 'docente_dirige'),
+                        ('Auxiliar', 'auxiliar'),
+                        ('Administrativo', 'administrativo')
+                      ] %}
+                      {% for label, key in campos %}
+                      <tr>
+                        <td class="text-start">{{ label }}</td>
+                        {% for nivel in niveles_nexus %}
+                          <td>{{ nivel[key] or '-' }}</td>
+                        {% endfor %}
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<!-- INCLUSIÓN DE MODALES -->
+{% include 'partials/registro_modal.html' %}
+{% include 'partials/normativa_modal.html' %}
+{% endblock %}
+

@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+.env
+venv/
+env/
+*.log
+
+# Flask / instance folder
+instance/
+*.egg-info
+*.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Repositorio de PDFs (NO subir a GitHub)
+static/conei_pdf/
+data
+schema.sql
+scripts

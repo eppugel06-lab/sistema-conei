@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}CONEI{% endblock %}
+
+{% block content %}
+<h2 class="mb-0 fw-bold text-primary">
+  <i class="fa-solid fa-book me-2"></i> Avance de Libro de Registro - CONEI
+</h2>
+
+<div class="table-responsive mt-3">
+  <table id="tablaIE" class="table table-hover align-middle text-nowrap">
+    <thead class="table-primary text-center">
+      <tr>
+        <th class="text-center" scope="col">#</th>
+        <th class="text-center" scope="col">Código Local</th>
+        <th class="text-center" scope="col">Nombre de IE</th>
+        <th class="text-center" scope="col">Estado</th>
+        <th class="text-center" scope="col">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ie in datos %}
+        <tr>
+          <td class="text-center">{{ loop.index }}</td>
+          <td class="text-center">{{ ie.codigo_local }}</td>
+          <td>
+            {{ modalidad_map.get(ie.modalidad, ie.modalidad) }} {{ ie.institucion_educativa }}
+          </td>
+          <td class="text-center">
+            <span class="badge {{ 'text-bg-success' if ie.estado == 'Consolidado' else 'text-bg-danger' }}">
+              {{ ie.estado }}
+            </span>
+          </td>
+          <td class="text-center">
+            <a href="{{ url_for('detalle_ie.detalle_ie', datos_ie_id=ie.id) }}"
+               data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Detalle" target="_blank">
+              <i class="fa-solid fa-eye me-1"></i>
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
