@@ -118,21 +118,21 @@
                   {% set anio_actual = anio_actual %}
 
                   <td class="text-center">
-                      <!-- Ver resolución -->
-                      {% if exp.pdf_resolucion %}
-                        <a href="{{ url_for('static', filename='conei_pdf/' 
-                            ~ datos_ie.modalidad ~ '_' 
-                            ~ datos_ie.codigo_local ~ '/' 
-                            ~ exp.pdf_resolucion) }}"
-                            target="_blank"
-                            class="btn btn-sm btn-outline-danger rounded-circle me-1"
-                            data-bs-toggle="tooltip" 
-                            data-bs-placement="top" 
-                            data-bs-title="Ver resolución">
+                      <!-- Ver resolución (Drive) -->
+                      {% if exp.drive_file_id %}
+                        <a href="https://drive.google.com/file/d/{{ exp.drive_file_id }}/view"
+                          target="_blank"
+                          class="btn btn-sm btn-outline-danger rounded-circle me-1"
+                          data-bs-toggle="tooltip" 
+                          data-bs-placement="top" 
+                          data-bs-title="Ver resolución (Drive)">
                             <i class="fa-solid fa-file-pdf"></i>
                         </a>
                       {% else %}
-                        <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="No adjunta Resolución">
+                        <span class="d-inline-block" tabindex="0"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="top"
+                              data-bs-title="No adjunta Resolución en Drive">
                           <button class="btn btn-sm btn-outline-secondary rounded-circle me-1" type="button" disabled>
                               <i class="fa-solid fa-file-pdf"></i>
                           </button>

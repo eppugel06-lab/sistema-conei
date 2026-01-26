@@ -1,16 +1,18 @@
-import os, io
+import os
+import io
 import sqlite3
-from PyPDF2 import PdfReader, PdfWriter
 from flask import Blueprint, request, session, redirect, url_for, flash, current_app, send_file
 from docx import Document
 from datetime import date
 from conexion_db import conectar
 from routes.auth import login_required
+from utils.drive import subir_pdf_a_drive, eliminar_archivo_drive
+from PyPDF2 import PdfReader, PdfWriter
 
 expedientes_bp = Blueprint("expedientes", __name__)
 
-UPLOAD_FOLDER = "static/conei_pdf"
 ALLOWED_EXTENSIONS = {"pdf"}
+
 
 @expedientes_bp.route("/guardar_resolucion", methods=["POST"])
 @login_required
@@ -22,12 +24,11 @@ def guardar_resolucion():
 
     pagina_inicio = request.form.get("pagina_inicio")
     pagina_fin = request.form.get("pagina_fin")
-
     pagina_inicio = int(pagina_inicio) if pagina_inicio else None
     pagina_fin = int(pagina_fin) if pagina_fin else None
 
     try:
-        # Datos del formulario
+        # ---------------- DATOS FORM ----------------
         fecha_registro = date.today().strftime("%Y-%m-%d")
         datos_ie_id = request.form.get("datos_ie_id")
         usuario_id = session["user_id"]
@@ -48,148 +49,109 @@ def guardar_resolucion():
         detalle = request.form.get("detalle", "")
         archivo_pdf = request.files.get("archivo_rd")
 
-        # Convertir a enteros
         datos_ie_id = int(datos_ie_id) if datos_ie_id else None
-        usuario_id = int(usuario_id) if usuario_id else None
         expediente_id = int(expediente_id) if expediente_id else None
 
+        drive_file_id = None
+        nuevo_nombre_pdf = None
+
+        # ==========================================================
+        # ====================== ACTUALIZAR ========================
+        # ==========================================================
         if expediente_id:
-            # --- ACTUALIZAR ---
-            cursor.execute(
-                """
-                SELECT e.pdf_resolucion, di.modalidad, di.codigo_local 
-                FROM expediente e 
-                JOIN datos_ie di ON e.datos_ie_id = di.id 
+            cursor.execute("""
+                SELECT e.pdf_resolucion, e.drive_file_id, di.modalidad, di.codigo_local
+                FROM expediente e
+                JOIN datos_ie di ON e.datos_ie_id = di.id
                 WHERE e.id = ?
-                """,
-                (expediente_id,),
-            )
+            """, (expediente_id,))
             expediente_actual = cursor.fetchone()
 
             if not expediente_actual:
-                cursor.close()
-                conexion.close()
-                return "Expediente no encontrado", 404
+                raise Exception("Expediente no encontrado")
 
             modalidad = expediente_actual["modalidad"]
             codigo_local = expediente_actual["codigo_local"]
-            pdf_anterior = expediente_actual["pdf_resolucion"]
+            drive_anterior = expediente_actual["drive_file_id"]
 
-            # Manejo de PDFs
-            nuevo_nombre_pdf = pdf_anterior
-            carpeta_destino = os.path.join(
-                current_app.root_path, UPLOAD_FOLDER, f"{modalidad}_{codigo_local}"
-            )
-            os.makedirs(carpeta_destino, exist_ok=True)
+            # 🔑 conservar valores actuales
+            nuevo_nombre_pdf = expediente_actual["pdf_resolucion"]
+            drive_file_id = drive_anterior
 
-            if archivo_pdf and archivo_pdf.filename:
-                # Eliminar anterior
-                if pdf_anterior:
-                    ruta_pdf_anterior = os.path.join(carpeta_destino, pdf_anterior)
-                    if os.path.exists(ruta_pdf_anterior):
-                        os.remove(ruta_pdf_anterior)
-                # Guardar nuevo
+            # ==================================================
+            # SOLO SI SE SUBE UN PDF NUEVO
+            # ==================================================
+            if archivo_pdf and allowed_file(archivo_pdf.filename):
+
+                # ---------- ELIMINAR PDF DRIVE ----------
+                if drive_anterior:
+                    try:
+                        eliminar_archivo_drive(drive_anterior)
+                    except Exception as e:
+                        flash(f"No se pudo eliminar PDF anterior en Drive: {e}", "warning")
+
                 extension = archivo_pdf.filename.rsplit(".", 1)[1].lower()
                 nuevo_nombre_pdf = f"{modalidad}_{codigo_local}_RD_{n_resolucion}.{extension}"
 
-                ruta_pdf = os.path.join(carpeta_destino, nuevo_nombre_pdf)
+                # 💾 PDF temporal en memoria con páginas seleccionadas
+                pdf_bytes = guardar_pdf_por_paginas(archivo_pdf, pagina_inicio, pagina_fin)
 
-                if pagina_inicio and pagina_fin and pagina_inicio > pagina_fin:
-                    raise ValueError("La página inicial no puede ser mayor que la final")
-                
-                guardar_pdf_por_paginas(
-                    archivo_pdf,
-                    ruta_pdf,
-                    pagina_inicio,
-                    pagina_fin
+                # ---------- SUBIR A DRIVE ----------
+                drive_file_id = subir_pdf_a_drive(
+                    pdf_bytes, nuevo_nombre_pdf, modalidad, codigo_local
                 )
 
-            cursor.execute(
-                """
+            # ==================================================
+            # UPDATE FINAL
+            # ==================================================
+            cursor.execute("""
                 UPDATE expediente
                 SET fecha_registro=?, num_expediente=?, tipo_atencion=?, anio_inicio=?, anio_fin=?, estado=?,
-                    fecha_emision=?, n_resolucion=?, pdf_resolucion=?, nombre_director=?,
-                    genero=?, correo=?, oficio_ie=?, detalle=?
+                    fecha_emision=?, n_resolucion=?, pdf_resolucion=?, nombre_pdf=?, drive_file_id=?,
+                    nombre_director=?, genero=?, correo=?, oficio_ie=?, detalle=?
                 WHERE id=?
-                """,
-                (
-                    fecha_registro,
-                    num_expediente,
-                    tipo_atencion,
-                    anio_inicio,
-                    anio_fin,
-                    estado,
-                    fecha_emision,
-                    n_resolucion,
-                    nuevo_nombre_pdf,
-                    nombre_director,
-                    genero,
-                    correo,
-                    oficio_ie,
-                    detalle,
-                    expediente_id,
-                ),
-            )
+            """, (
+                fecha_registro, num_expediente, tipo_atencion, anio_inicio, anio_fin, estado,
+                fecha_emision, n_resolucion, nuevo_nombre_pdf, nuevo_nombre_pdf, drive_file_id,
+                nombre_director, genero, correo, oficio_ie, detalle, expediente_id
+            ))
 
+        # ==========================================================
+        # ======================== CREAR ===========================
+        # ==========================================================
         else:
-            # --- CREAR ---
-            archivo_nombre = None
             if archivo_pdf and allowed_file(archivo_pdf.filename):
                 extension = archivo_pdf.filename.rsplit(".", 1)[1].lower()
-                archivo_nombre = f"{modalidad}_{codigo_local}_RD_{n_resolucion}.{extension}"
+                nuevo_nombre_pdf = f"{modalidad}_{codigo_local}_RD_{n_resolucion}.{extension}"
 
-                carpeta_destino = os.path.join(
-                    current_app.root_path, UPLOAD_FOLDER, f"{modalidad}_{codigo_local}"
-                )
-                os.makedirs(carpeta_destino, exist_ok=True)
+                # 💾 PDF temporal en memoria
+                pdf_bytes = guardar_pdf_por_paginas(archivo_pdf, pagina_inicio, pagina_fin)
 
-                ruta_pdf = os.path.join(carpeta_destino, archivo_nombre)
-
-                if pagina_inicio and pagina_fin and pagina_inicio > pagina_fin:
-                    raise ValueError("La página inicial no puede ser mayor que la final")
-
-                guardar_pdf_por_paginas(
-                    archivo_pdf,
-                    ruta_pdf,
-                    pagina_inicio,
-                    pagina_fin
+                # ---------- SUBIR A DRIVE ----------
+                drive_file_id = subir_pdf_a_drive(
+                    pdf_bytes, nuevo_nombre_pdf, modalidad, codigo_local
                 )
 
-            cursor.execute(
-                """
+            cursor.execute("""
                 INSERT INTO expediente (
                     fecha_registro, num_expediente, tipo_atencion, anio_inicio, anio_fin, estado,
-                    fecha_emision, n_resolucion, pdf_resolucion, nombre_director,
-                    genero, correo, oficio_ie, detalle, datos_ie_id, user_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    fecha_registro,
-                    num_expediente,
-                    tipo_atencion,
-                    anio_inicio,
-                    anio_fin,
-                    estado,
-                    fecha_emision,
-                    n_resolucion,
-                    archivo_nombre,
-                    nombre_director,
-                    genero,
-                    correo,
-                    oficio_ie,
-                    detalle,
-                    datos_ie_id,
-                    usuario_id,
-                ),
-            )
+                    fecha_emision, n_resolucion, pdf_resolucion, nombre_pdf, drive_file_id,
+                    nombre_director, genero, correo, oficio_ie, detalle,
+                    datos_ie_id, user_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                fecha_registro, num_expediente, tipo_atencion, anio_inicio, anio_fin, estado,
+                fecha_emision, n_resolucion, nuevo_nombre_pdf, nuevo_nombre_pdf, drive_file_id,
+                nombre_director, genero, correo, oficio_ie, detalle,
+                datos_ie_id, usuario_id
+            ))
 
         conexion.commit()
         flash("Resolución registrada correctamente", "success")
 
     except Exception as e:
         conexion.rollback()
-        print("Error al registrar resolución:", e)
-        flash(f"Error al registrar resolución: {e}", "danger")
+        flash(f"Error: {e}", "danger")
 
     finally:
         cursor.close()
@@ -197,27 +159,30 @@ def guardar_resolucion():
 
     return redirect(url_for("detalle_ie.detalle_ie", datos_ie_id=datos_ie_id))
 
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def guardar_pdf_por_paginas(archivo_pdf, ruta_salida, pagina_inicio=None, pagina_fin=None):
+
+def guardar_pdf_por_paginas(archivo_pdf, pagina_inicio=None, pagina_fin=None):
+    """Devuelve un PDF en memoria (io.BytesIO) con solo las páginas seleccionadas"""
     lector = PdfReader(archivo_pdf)
     escritor = PdfWriter()
-
     total_paginas = len(lector.pages)
 
     if pagina_inicio and pagina_fin:
         inicio = max(1, pagina_inicio)
         fin = min(pagina_fin, total_paginas)
-
         for i in range(inicio - 1, fin):
             escritor.add_page(lector.pages[i])
     else:
         for pagina in lector.pages:
             escritor.add_page(pagina)
 
-    with open(ruta_salida, "wb") as f:
-        escritor.write(f)
+    pdf_bytes = io.BytesIO()
+    escritor.write(pdf_bytes)
+    pdf_bytes.seek(0)
+    return pdf_bytes
 
 @expedientes_bp.route("/eliminar_expediente/<int:expediente_id>", methods=["POST"])
 @login_required
@@ -226,32 +191,38 @@ def eliminar_expediente(expediente_id):
     conexion.row_factory = sqlite3.Row
     cursor = conexion.cursor()
 
-    cursor.execute(
-        """
-        SELECT e.pdf_resolucion, di.modalidad, di.codigo_local 
-        FROM expediente e 
-        JOIN datos_ie di ON e.datos_ie_id = di.id 
+    cursor.execute("""
+        SELECT 
+            e.drive_file_id,
+            di.modalidad,
+            di.codigo_local
+        FROM expediente e
+        JOIN datos_ie di ON e.datos_ie_id = di.id
         WHERE e.id = ?
-        """,
-        (expediente_id,),
-    )
+    """, (expediente_id,))
+    
     resultado = cursor.fetchone()
 
     if resultado:
-        pdf_resolucion = resultado["pdf_resolucion"]
-        modalidad = resultado["modalidad"]
-        codigo_local = resultado["codigo_local"]
+        drive_file_id = resultado["drive_file_id"]
 
-        if pdf_resolucion:
-            carpeta_destino = os.path.join(
-                current_app.root_path, UPLOAD_FOLDER, f"{modalidad}_{codigo_local}"
-            )
-            archivo_ruta = os.path.join(carpeta_destino, pdf_resolucion)
-            if os.path.exists(archivo_ruta):
-                os.remove(archivo_ruta)
+        # -----------------------------
+        # ELIMINAR PDF EN DRIVE
+        # -----------------------------
+        try:
+            if drive_file_id:
+                eliminar_archivo_drive(drive_file_id)
+        except Exception as e:
+            # No bloquea el borrado en BD
+            print("Error al eliminar archivo en Drive:", e)
 
-        cursor.execute("DELETE FROM expediente WHERE id=?", (expediente_id,))
+        # -----------------------------
+        # ELIMINAR REGISTRO BD
+        # -----------------------------
+        cursor.execute("DELETE FROM expediente WHERE id = ?", (expediente_id,))
         conexion.commit()
+
+        flash("Expediente eliminado correctamente", "success")
 
     cursor.close()
     conexion.close()
@@ -264,7 +235,6 @@ def reemplazar_etiquetas(doc, reemplazos):
             for clave, valor in reemplazos.items():
                 if clave in run.text:
                     run.text = run.text.replace(clave, valor)
-
 
 @expedientes_bp.route("/generar_oficio/<int:expediente_id>")
 @login_required

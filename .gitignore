@@ -23,8 +23,9 @@ instance/
 Thumbs.db
 .DS_Store
 
-# Repositorio de PDFs (NO subir a GitHub)
-static/conei_pdf/
+# Archivos y carpetas
 data
 schema.sql
 scripts
+secrets
+token.json
