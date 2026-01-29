@@ -100,7 +100,32 @@ def detalle_ie(datos_ie_id):
     # 🟢 DECLARACIÓN DE INTEGRANTES DEL CONEI (NORMATIVA)
     # =====================================================
 
-    normativa = 'ejemplo'
+    normativa = """
+                    2. CONFORMACIÓN DEL CONEI
+
+                    2.1. Integrantes obligatorios
+                    (Numeral 5.3.1)
+
+                    El CONEI está conformado por:
+                    • Director(a) de la IE (preside).
+                    • Subdirectores (si existen).
+                    • 1 representante de estudiantes por nivel o ciclo.
+                    • 1 representante de las familias (elegido por APAFA si existe en la IE).
+                    • 1 representante de docentes por nivel o ciclo.
+                    • 1 representante del personal administrativo / apoyo / no docente (de contar con dicho personal).
+                    • 1 representante de exalumnos, en caso hubiera.
+
+                    2.2. Flexibilidad en la conformación
+                    (Numeral 5.3.2)
+
+                    El número de representantes puede aumentar según el RI o DG de la IE.
+                    Se consideran casos especiales:
+                    • EBA: no requiere representante de familias.
+                    • EBE: estudiantes pueden ser representados por familias.
+                    • Inicial: estudiantes representados por familias.
+                    • En el caso de las II.EE. que cuentan con más de un nivel o ciclo, corresponde elegir un (1) representante de los estudiantes y un (1) representante de los docentes por cada nivel o ciclo. Asimismo, el CONEI tiene autonomía para incorporar representantes adicionales.
+                    • Si existe personal auxiliar, debe incorporarse un representante.
+                    """
 
     # Presidente (Director)
     presidente = 1

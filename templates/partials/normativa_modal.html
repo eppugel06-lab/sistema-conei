@@ -14,16 +14,48 @@
 
       <!-- BODY -->
       <div class="modal-body p-4" id="timelineBody">
-        <div class="list-group list-group-flush">
-          {% for parrafo in normativa.split('\n') %}
-            {% if parrafo.strip() %}
-              <div class="list-group-item border-0 px-0 d-flex align-items-start">
-                <p class="mb-0 small lh-sm text-secondary">{{ parrafo }}</p>
-              </div>
-            {% endif %}
-          {% endfor %}
+
+          <div class="list-group list-group-flush">
+
+            {% for linea in normativa.split('\n') %}
+              {% set txt = linea.strip() %}
+              {% if txt %}
+
+                {% if txt[0].isdigit() and '.' in txt %}
+                  <!-- TÍTULO -->
+                  <div class="list-group-item border-0 px-0">
+                    <h6 class="fw-bold text-secondary mb-2">
+                      {{ txt }}
+                    </h6>
+                  </div>
+
+                {% elif txt.startswith('(') %}
+                  <!-- SUBTÍTULO -->
+                  <div class="list-group-item border-0 px-0">
+                    <small class="text-muted fst-italic">{{ txt }}</small>
+                  </div>
+
+                {% elif txt.startswith('•') %}
+                  <!-- ÍTEM -->
+                  <div class="list-group-item border-0 px-0 d-flex align-items-start">
+                    <i class="fa-solid fa-circle-check text-success me-2 mt-1"></i>
+                    <p class="mb-0 small text-secondary">{{ txt[1:] }}</p>
+                  </div>
+
+                {% else %}
+                  <!-- TEXTO NORMAL -->
+                  <div class="list-group-item border-0 px-0">
+                    <p class="mb-1 small text-secondary">{{ txt }}</p>
+                  </div>
+
+                {% endif %}
+
+              {% endif %}
+            {% endfor %}
+
+          </div>
         </div>
-      </div>
+
 
       <!-- FOOTER -->
       <div class="modal-footer border-0">

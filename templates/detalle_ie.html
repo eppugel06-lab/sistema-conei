@@ -164,6 +164,7 @@
                                 <i class="fa-solid fa-pen-to-square"></i>
                               </button>
                             </span>
+                          {% if session['charge'] == 'ADMIN' %}
                           <!-- Botón Word -->
                           <a href="{{ url_for('expedientes.generar_oficio', expediente_id=exp.id) }}" 
                             class="btn btn-outline-primary btn-sm rounded-circle" 
@@ -183,6 +184,7 @@
                               <i class="fa-solid fa-trash"></i>
                             </button>
                           </form>
+                          {% endif %}
                       {% else %}
                           <!-- Editar deshabilitado -->
                           <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="No editable: año anterior">
@@ -190,7 +192,7 @@
                               <i class="fa-solid fa-pen-to-square"></i>
                             </button>
                           </span>
-
+                          {% if session['charge'] == 'ADMIN' %}
                           <!-- Botón Word -->
                           <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="No Oficio: año anterior">
                             <a class="btn btn-outline-secondary btn-sm rounded-circle disabled"  aria-disabled="true">
@@ -204,6 +206,7 @@
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                           </span> 
+                          {% endif %}
                       {% endif %}
                     {% endif %}
                   </td>
@@ -221,9 +224,34 @@
 
       <!-- CONEI -->
       <div>
-        <h5 class="fw-bold mb-2">
-          <i class="fa-solid fa-people-group text-primary me-2"></i> Composición del CONEI
-        </h5>
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+
+  <h5 class="fw-bold mb-0">
+    <i class="fa-solid fa-people-group text-primary me-2"></i>
+    Composición del CONEI
+  </h5>
+
+  <div class="d-flex gap-2">
+
+    <!-- Botón Normativa -->
+    <button class="btn btn-outline-primary btn-sm rounded-pill px-3"
+            data-bs-toggle="modal"
+            data-bs-target="#modalConsideraciones">
+      <i class="fa-solid fa-circle-info me-1"></i>
+      Normativa
+    </button>
+
+    <!-- Botón Formatos (Drive) -->
+    <a href="https://drive.google.com/drive/folders/1V5aSgT5_NRaw5uwg2OjYo_IVN3hVElH3"
+       target="_blank"
+       class="btn btn-outline-success btn-sm rounded-pill px-3">
+      <i class="fa-solid fa-folder-open me-1"></i>
+      Formatos
+    </a>
+
+  </div>
+</div>
+
         <p class="text-muted small mb-4">5.3.1. El CONEI se encuentra conformado por los siguientes integrantes:</p>
 
         <div class="row g-4">
@@ -238,12 +266,6 @@
                     <i class="fa-solid fa-list-check me-2 text-secondary"></i>
                     Tipos de Integrantes
                   </h6>
-                  <button class="btn btn-outline-primary btn-sm rounded-pill px-2" 
-                          data-bs-toggle="modal" 
-                          data-bs-target="#modalConsideraciones">
-                    <i class="fa-solid fa-circle-info me-1"></i>Normativa
-                  </button>
-
                 </div>
 
                 <!-- Tabla -->

@@ -32,7 +32,7 @@ def reconocimiento():
                 ie.institucion_educativa,
                 ie.modalidad,
                 CASE 
-                    WHEN SUM(e.estado = 'Validado') > 0 THEN 'Consolidado'
+                    WHEN SUM(e.estado = 'Validado' and e.anio_fin = '2026') > 0 THEN 'Consolidado'
                     ELSE 'Sin Consolidar'
                 END AS estado
             FROM datos_ie ie

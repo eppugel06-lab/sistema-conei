@@ -34,6 +34,7 @@ def login():
 
                 session["user_id"] = user["id"]
                 session["user_name"] = user["user_name"]
+                session["charge"] = user["charge"]
 
                 # ⏰ registrar actividad inicial
                 session["last_activity"] = datetime.utcnow().timestamp()
