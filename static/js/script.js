@@ -74,6 +74,19 @@ $(document).ready(function() {
     });
 });
 
+function mostrarLoader(form) {
+    document.getElementById("pageLoader").classList.remove("d-none");
+
+    const btn = form.querySelector("button[type='submit']");
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          Procesando...
+        `;
+    }
+}
+
 
 document.addEventListener("DOMContentLoaded", function () {
     const modalRegistrar = document.getElementById("modalRegistrar");

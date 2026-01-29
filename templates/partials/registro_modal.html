@@ -2,7 +2,6 @@
 <div class="modal fade" id="modalRegistrar" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content rounded-4 shadow">
-
       <!-- Header -->
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="modalTitulo">
@@ -10,9 +9,8 @@
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-
       <!-- Form -->
-      <form id="formResolucion" action="{{ url_for('expedientes.guardar_resolucion') }}" method="POST" enctype="multipart/form-data">
+      <form id="formResolucion" action="{{ url_for('expedientes.guardar_resolucion') }}" method="POST" enctype="multipart/form-data" onsubmit="mostrarLoader(this)">
         <div class="modal-body px-4 py-3">
           <input type="hidden" name="datos_ie_id" value="{{ datos_ie.id }}">
           <input type="hidden" name="codigo_local" value="{{ datos_ie.codigo_local }}">

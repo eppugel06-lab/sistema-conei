@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 class Config:
     # 🔑 Llave secreta (usar variable de entorno en producción)
@@ -35,3 +36,9 @@ class Config:
 
     # 👉 Producción (PythonAnywhere)
     # GOOGLE_REDIRECT_URI=https://TU_USUARIO.pythonanywhere.com/oauth2callback
+
+     # ⏰ Tiempo máximo de inactividad (segundos)
+    INACTIVITY_TIMEOUT = 900  # 15 minutos
+
+    # Flask session lifetime (extra seguridad)
+    PERMANENT_SESSION_LIFETIME = timedelta(seconds=INACTIVITY_TIMEOUT)

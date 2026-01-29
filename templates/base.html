@@ -42,6 +42,16 @@
 
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- 🔄 LOADER GLOBAL -->
+    <div id="pageLoader"
+         class="d-none position-fixed top-0 start-0 w-100 h-100
+                d-flex flex-column justify-content-center align-items-center
+                bg-dark bg-opacity-75"
+         style="z-index:2000;">
+        <div class="spinner-border text-light mb-3" role="status"></div>
+        <strong class="text-light">Registrando información, espere…</strong>
+    </div>
 </body>
 </html>
 

@@ -302,6 +302,7 @@ def generar_oficio(expediente_id):
         "<<ATENCION_MIN>>": "reconoce"
         if expediente["tipo_atencion"] == "Reconocimiento"
         else "actualiza",
+        "<<COORD_SIGLA>>": "EMLR/Coord.(e) EPP",
     }
 
     reemplazar_etiquetas(doc, reemplazos)
