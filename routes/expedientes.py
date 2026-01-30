@@ -1,7 +1,7 @@
 import os
 import io
 import sqlite3
-from flask import Blueprint, request, session, redirect, url_for, flash, current_app, send_file
+from flask import Blueprint, request, session, redirect, url_for, flash, current_app, send_file, abort
 from docx import Document
 from datetime import date
 from conexion_db import conectar
@@ -17,6 +17,8 @@ ALLOWED_EXTENSIONS = {"pdf"}
 @expedientes_bp.route("/guardar_resolucion", methods=["POST"])
 @login_required
 def guardar_resolucion():
+    if session.get("charge") != "ADMIN":
+        abort(403)
     datos_ie_id = None
     conexion = conectar()
     conexion.row_factory = sqlite3.Row

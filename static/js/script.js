@@ -87,24 +87,30 @@ function mostrarLoader(form) {
     }
 }
 
-
 document.addEventListener("DOMContentLoaded", function () {
     const modalRegistrar = document.getElementById("modalRegistrar");
 
     modalRegistrar.addEventListener("show.bs.modal", function (event) {
-        const button = event.relatedTarget; // Botón que abre el modal
+        const button = event.relatedTarget;
         const id = button.getAttribute("data-id");
+        const esAdmin = button.getAttribute("data-es-admin") === "1";
 
-        // Cambiar título y botón según si es nuevo o edición
         const modalTitulo = modalRegistrar.querySelector("#modalTitulo");
         const botonGuardar = modalRegistrar.querySelector(".modal-footer button[type='submit']");
 
         if (id) {
-            modalTitulo.innerHTML = `<i class="fa-solid fa-pen-to-square me-2"></i> Actualizar Resolución`;
-            botonGuardar.innerHTML = `<i class="fa-solid fa-save me-1"></i> Actualizar`;
+            if (esAdmin) {
+                modalTitulo.innerHTML = `<i class="fa-solid fa-pen-to-square me-2"></i> Editar Expediente`;
+                botonGuardar.innerHTML = `<i class="fa-solid fa-save me-1"></i> Actualizar`;
+                botonGuardar.classList.remove("d-none");
+            } else {
+                modalTitulo.innerHTML = `<i class="fa-solid fa-eye me-2"></i> Lectura de Expediente`;
+                botonGuardar.classList.add("d-none"); // ocultar guardar
+            }
         } else {
             modalTitulo.innerHTML = `<i class="fa-solid fa-plus me-2"></i> Registro Resolución`;
             botonGuardar.innerHTML = `<i class="fa-solid fa-floppy-disk me-1"></i> Guardar`;
+            botonGuardar.classList.remove("d-none");
         }
 
         // Llenar campos
@@ -120,14 +126,61 @@ document.addEventListener("DOMContentLoaded", function () {
         modalRegistrar.querySelector("#correo").value = button.getAttribute("data-correo") || "";
         modalRegistrar.querySelector("#oficio").value = button.getAttribute("data-oficio") || "";
         modalRegistrar.querySelector("#detalle").value = button.getAttribute("data-detalle") || "";
-        const codigo_local = button.getAttribute("data-codigo_local");
-        const modalidad = button.getAttribute("data-modalidad");
-        const archivo = button.getAttribute("data-archivo");
-        const archivoActual = modalRegistrar.querySelector("#archivo_actual");
-        archivoActual.innerHTML = archivo
-            ? `Archivo actual: <a href="/static/conei_pdf/${modalidad}_${codigo_local}/${archivo}" target="_blank">Ver PDF</a>`
-            : "";
     });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const estadoSelect = document.getElementById("estado");
+
+  const grupoDetalle = document.getElementById("grupo-detalle");
+  const detalleInput = document.getElementById("detalle");
+
+  const grupoValidado = document.getElementById("grupo-validado");
+
+  if (!estadoSelect) return;
+
+  function toggleCampos() {
+
+    if (estadoSelect.value === "Validado") {
+
+      // 🔹 Oculta Detalle
+      if (grupoDetalle) {
+        grupoDetalle.classList.add("d-none");
+        detalleInput.value = "";
+        detalleInput.required = false;
+      }
+
+      // 🔹 Muestra campos de validado
+      if (grupoValidado) {
+        grupoValidado.classList.remove("d-none");
+      }
+
+    } else {
+
+      // 🔹 Muestra Detalle
+      if (grupoDetalle) {
+        grupoDetalle.classList.remove("d-none");
+        detalleInput.required = true;
+      }
+
+      // 🔹 Oculta campos de validado
+      if (grupoValidado) {
+        grupoValidado.classList.add("d-none");
+
+        // Limpieza opcional
+        grupoValidado.querySelectorAll("input").forEach(i => {
+          if (i.type !== "file") i.value = "";
+        });
+      }
+    }
+  }
+
+  // Tiempo real
+  estadoSelect.addEventListener("change", toggleCampos);
+
+  // Al abrir modal (editar / ver)
+  toggleCampos();
 });
 
 document.addEventListener("DOMContentLoaded", function () {

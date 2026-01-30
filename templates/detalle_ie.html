@@ -74,12 +74,14 @@
         <h5 class="fw-bold mb-0">
           <i class="fa-solid fa-folder-open text-primary me-2"></i> Expedientes
         </h5>
+        {% if session['charge'] == 'ADMIN' %}
         <button type="button" 
                 class="btn btn-primary btn-sm rounded-pill px-3" 
                 data-bs-toggle="modal" 
                 data-bs-target="#modalRegistrar">
           <i class="fa-solid fa-plus me-1"></i> Nuevo Registro
         </button>
+        {% endif %}
       </div>
 
       {% if expedientes %}
@@ -118,99 +120,124 @@
                   {% set anio_actual = anio_actual %}
 
                   <td class="text-center">
-                      <!-- Ver resolución (Drive) -->
-                      {% if exp.drive_file_id %}
-                        <a href="https://drive.google.com/file/d/{{ exp.drive_file_id }}/view"
-                          target="_blank"
-                          class="btn btn-sm btn-outline-danger rounded-circle me-1"
-                          data-bs-toggle="tooltip" 
-                          data-bs-placement="top" 
-                          data-bs-title="Ver resolución (Drive)">
-                            <i class="fa-solid fa-file-pdf"></i>
+
+                    {% set es_admin = session['charge'] == 'ADMIN' %}
+                    {% set editable = exp.fecha_emision and exp.vigente %}
+                    {% set tiene_drive = exp.drive_file_id %}
+
+                    <!-- ================= PDF DRIVE ================= -->
+                    {% if tiene_drive %}
+                      <a href="https://drive.google.com/file/d/{{ exp.drive_file_id }}/view"
+                        target="_blank"
+                        class="btn btn-sm btn-outline-danger rounded-circle me-1"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="Ver resolución (Drive)">
+                        <i class="fa-solid fa-file-pdf"></i>
+                      </a>
+                    {% else %}
+                      <span data-bs-toggle="tooltip" data-bs-title="No adjunta Resolución en Drive">
+                        <button class="btn btn-sm btn-outline-secondary rounded-circle me-1" disabled>
+                          <i class="fa-solid fa-file-pdf"></i>
+                        </button>
+                      </span>
+                    {% endif %}
+                    <!-- ================= LECTURA EXPEDIENTE ================= -->
+                    {% if not es_admin %}
+                    <!-- Ver Expediente -->
+                        <span data-bs-toggle="tooltip" data-bs-title="Ver expediente">
+                          <button class="btn btn-outline-secondary btn-sm rounded-circle me-1"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#modalRegistrar"
+                                  data-id="{{ exp.id }}"
+                                  data-modalidad="{{ datos_ie.modalidad }}"
+                                  data-codigo_local="{{ datos_ie.codigo_local }}"
+                                  data-director="{{ exp.nombre_director }}"
+                                  data-genero="{{ exp.genero }}"
+                                  data-expediente="{{ exp.num_expediente }}"
+                                  data-tipo="{{ exp.tipo_atencion }}"
+                                  data-anio_inicio="{{ exp.anio_inicio }}"
+                                  data-estado="{{ exp.estado }}"
+                                  data-resolucion="{{ exp.n_resolucion }}"
+                                  data-fecha="{{ exp.fecha_emision.strftime('%Y-%m-%d') }}"
+                                  data-correo="{{ exp.correo }}"
+                                  data-oficio="{{ exp.oficio_ie }}"
+                                  data-detalle="{{ exp.detalle }}"
+                                  data-archivo="{{ exp.pdf_resolucion }}"
+                                  data-es-admin="{{ '1' if session['charge'] == 'ADMIN' else '0' }}">
+                            <i class="fa-regular fa-file"></i>
+                          </button>
+                        </span>
+                    {% endif %}
+                    <!-- ================= ACCIONES ADMIN ================= -->
+                    {% if es_admin %}
+                      {% if editable %}
+                        <!-- Registrar -->
+                        <span data-bs-toggle="tooltip" data-bs-title="Editar expediente">
+                          <button class="btn btn-outline-primary btn-sm rounded-circle me-1"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#modalRegistrar"
+                                  data-id="{{ exp.id }}"
+                                  data-modalidad="{{ datos_ie.modalidad }}"
+                                  data-codigo_local="{{ datos_ie.codigo_local }}"
+                                  data-director="{{ exp.nombre_director }}"
+                                  data-genero="{{ exp.genero }}"
+                                  data-expediente="{{ exp.num_expediente }}"
+                                  data-tipo="{{ exp.tipo_atencion }}"
+                                  data-anio_inicio="{{ exp.anio_inicio }}"
+                                  data-estado="{{ exp.estado }}"
+                                  data-resolucion="{{ exp.n_resolucion }}"
+                                  data-fecha="{{ exp.fecha_emision.strftime('%Y-%m-%d') }}"
+                                  data-correo="{{ exp.correo }}"
+                                  data-oficio="{{ exp.oficio_ie }}"
+                                  data-detalle="{{ exp.detalle }}"
+                                  data-archivo="{{ exp.pdf_resolucion }}">
+                            <i class="{{ 'fa-solid fa-pen-to-square' if es_admin else 'fa-regular fa-file' }}"></i>
+                          </button>
+                        </span>
+                        <!-- Word -->
+                        <a href="{{ url_for('expedientes.generar_oficio', expediente_id=exp.id) }}"
+                          class="btn btn-outline-primary btn-sm rounded-circle me-1"
+                          data-bs-toggle="tooltip"
+                          data-bs-title="Generar oficio Word">
+                          <i class="fa-solid fa-file-word"></i>
                         </a>
+
+                        <!-- Eliminar -->
+                        <form action="{{ url_for('expedientes.eliminar_expediente', expediente_id=exp.id) }}"
+                              method="POST"
+                              class="d-inline">
+                          <button type="submit"
+                                  class="btn btn-outline-danger btn-sm rounded-circle"
+                                  data-bs-toggle="tooltip"
+                                  data-bs-title="Eliminar expediente"
+                                  onclick="return confirm('¿Seguro que quieres eliminar este expediente?')">
+                            <i class="fa-solid fa-trash"></i>
+                          </button>
+                        </form>
                       {% else %}
-                        <span class="d-inline-block" tabindex="0"
-                              data-bs-toggle="tooltip"
-                              data-bs-placement="top"
-                              data-bs-title="No adjunta Resolución en Drive">
-                          <button class="btn btn-sm btn-outline-secondary rounded-circle me-1" type="button" disabled>
-                              <i class="fa-solid fa-file-pdf"></i>
+                        <!-- Registro deshabilitado -->
+                        <span data-bs-toggle="tooltip" data-bs-title="No editable: año anterior">
+                          <button class="btn btn-outline-secondary btn-sm rounded-circle me-1" disabled>
+                            <i class="fa-solid fa-pen-to-square"></i>
+                          </button>
+                        </span>
+                        <!-- Word deshabilitado -->
+                        <span data-bs-toggle="tooltip" data-bs-title="No Oficio: año anterior">
+                          <button class="btn btn-outline-secondary btn-sm rounded-circle me-1" disabled>
+                            <i class="fa-solid fa-file-word"></i>
+                          </button>
+                        </span>
+
+                        <!-- Eliminar deshabilitado -->
+                        <span data-bs-toggle="tooltip" data-bs-title="No eliminable: año anterior">
+                          <button class="btn btn-outline-secondary btn-sm rounded-circle" disabled>
+                            <i class="fa-solid fa-trash"></i>
                           </button>
                         </span>
                       {% endif %}
-
-                      {% if exp.fecha_emision %}
-                          {% if exp.vigente %}
-                            <!-- Editar habilitado -->
-                            <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="Editar expediente">
-                              <button class="btn btn-outline-primary btn-sm rounded-circle"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#modalRegistrar"
-                                      data-id="{{ exp.id }}"
-                                      data-modalidad="{{ datos_ie.modalidad }}"
-                                      data-codigo_local="{{ datos_ie.codigo_local }}"
-                                      data-director="{{ exp.nombre_director }}"
-                                      data-genero="{{ exp.genero }}"
-                                      data-expediente="{{ exp.num_expediente }}"
-                                      data-tipo="{{ exp.tipo_atencion }}"
-                                      data-anio_inicio ="{{ exp.anio_inicio }}"
-                                      data-estado="{{ exp.estado }}"
-                                      data-resolucion="{{ exp.n_resolucion }}"
-                                      data-fecha="{{ exp.fecha_emision.strftime('%Y-%m-%d') if exp.fecha_emision else '' }}"
-                                      data-correo="{{ exp.correo }}"
-                                      data-oficio="{{ exp.oficio_ie }}"
-                                      data-detalle="{{ exp.detalle }}"
-                                      data-archivo="{{ exp.pdf_resolucion }}">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                              </button>
-                            </span>
-                          {% if session['charge'] == 'ADMIN' %}
-                          <!-- Botón Word -->
-                          <a href="{{ url_for('expedientes.generar_oficio', expediente_id=exp.id) }}" 
-                            class="btn btn-outline-primary btn-sm rounded-circle" 
-                            data-bs-toggle="tooltip" data-bs-placement="top" 
-                            data-bs-title="Generar oficio Word">
-                              <i class="fa-solid fa-file-word"></i>
-                          </a>
-
-                          <!-- Eliminar habilitado -->
-                          <form action="{{ url_for('expedientes.eliminar_expediente', expediente_id=exp.id) }}" 
-                                method="POST" style="display:inline;">
-                            <button type="submit" 
-                                    class="btn btn-outline-danger btn-sm rounded-circle" 
-                                    data-bs-toggle="tooltip" data-bs-placement="top" 
-                                    data-bs-title="Eliminar expediente"
-                                    onclick="return confirm('¿Seguro que quieres eliminar este expediente?')">
-                              <i class="fa-solid fa-trash"></i>
-                            </button>
-                          </form>
-                          {% endif %}
-                      {% else %}
-                          <!-- Editar deshabilitado -->
-                          <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="No editable: año anterior">
-                            <button class="btn btn-outline-secondary btn-sm rounded-circle" disabled>
-                              <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                          </span>
-                          {% if session['charge'] == 'ADMIN' %}
-                          <!-- Botón Word -->
-                          <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="No Oficio: año anterior">
-                            <a class="btn btn-outline-secondary btn-sm rounded-circle disabled"  aria-disabled="true">
-                                <i class="fa-solid fa-file-word"></i>
-                            </a>
-                          </span>
-
-                          <!-- Eliminar deshabilitado -->
-                          <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="No eliminable: año anterior">
-                            <button class="btn btn-outline-secondary btn-sm rounded-circle" disabled>
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                          </span> 
-                          {% endif %}
-                      {% endif %}
                     {% endif %}
-                  </td>
 
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>

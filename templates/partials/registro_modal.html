@@ -5,7 +5,6 @@
       <!-- Header -->
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="modalTitulo">
-          <i class="fa-solid fa-plus me-2"></i> Registro - {{ modalidad_map.get(datos_ie.modalidad, datos_ie.modalidad) }} {{ datos_ie.institucion_educativa }}
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
@@ -16,39 +15,39 @@
           <input type="hidden" name="codigo_local" value="{{ datos_ie.codigo_local }}">
           <input type="hidden" name="modalidad" value="{{ datos_ie.modalidad }}">
           <input type="hidden" name="expediente_id" id="expediente_id">
-
+          {% set solo_lectura = session['charge'] != 'ADMIN' %}
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Director</label>
-              <input type="text" name="director" id="director" class="form-control" placeholder="Nombres y Apellidos" required>
+              <input type="text" name="director" id="director" class="form-control" required {% if solo_lectura %} placeholder="" disabled {% else %} placeholder="Nombres y Apellidos" {% endif %}>
             </div>
             <div class="col-md-3">
               <label class="form-label">Género</label>
-              <select name="genero" id="genero" class="form-select" required>
-                <option value="" disabled>Seleccionar</option>
+              <select name="genero" id="genero" class="form-select" required {% if solo_lectura %}disabled{% endif %}>
+                <option value="" disabled>{% if not solo_lectura %} Seleccionar {% endif %}</option>
                 <option value="Masculino">Masculino</option>
                 <option value="Femenino">Femenino</option>
               </select>
             </div>
             <div class="col-md-3">
               <label class="form-label">Expediente</label>
-              <input type="text" name="expediente" id="num_expediente" class="form-control" placeholder="0101741-2026" required>
+              <input type="text" name="expediente" id="num_expediente" class="form-control" placeholder="0101741-2026" required {% if solo_lectura %}disabled{% endif %}>
             </div>
             <div class="col-md-4">
               <label class="form-label">Tipo de atención</label>
-              <select name="tipo_atencion" id="tipo_atencion" class="form-select" required>
-                <option value="" disabled>Seleccionar</option>
+              <select name="tipo_atencion" id="tipo_atencion" class="form-select" required {% if solo_lectura %}disabled{% endif %}>
+                <option value="" disabled>{% if not solo_lectura %}Seleccionar{% endif %}</option>
                 <option value="Reconocimiento">Reconocimiento</option>
                 <option value="Actualización">Actualización</option>
               </select>
             </div>
             <div class="col-md-4">
               <label class="form-label">Periodo</label>
-              <input type="text" name="anio_inicio" id="anio_inicio" class="form-control" placeholder="2026" required>
+              <input type="text" name="anio_inicio" id="anio_inicio" class="form-control" placeholder="2026" required {% if solo_lectura %}disabled{% endif %}>
             </div>
             <div class="col-md-4">
               <label class="form-label">Estado</label>
-              <select name="estado" id="estado" class="form-select" required>
+              <select name="estado" id="estado" class="form-select" required {% if solo_lectura %}disabled{% endif %}>
                 <option value="" disabled>Seleccionar</option>
                 <option value="Validado">Validado</option>
                 <option value="Observado">Observado</option>
@@ -56,47 +55,52 @@
             </div>
             <div class="col-md-4">
               <label class="form-label">Resolución Directoral</label>
-              <input type="text" name="resolucion_directoral" id="resolucion" class="form-control" placeholder="00750-2026" required>
+              <input type="text" name="resolucion_directoral" id="resolucion" class="form-control" placeholder="00750-2026" required {% if solo_lectura %} disabled {% endif %}>
             </div>
             <div class="col-md-4">
               <label class="form-label">Fecha de emisión</label>
-              <input type="date" name="fecha_emision" id="fecha_emision" class="form-control" required>
+              <input type="date" name="fecha_emision" id="fecha_emision" class="form-control" required {% if solo_lectura %}disabled{% endif %}>
             </div>
             <div class="col-md-6">
               <label class="form-label">Correo</label>
-              <input type="email" name="correo" id="correo" class="form-control" placeholder="ie@gmail.com">
+              <input type="email" name="correo" id="correo" class="form-control" {% if solo_lectura %} placeholder="" disabled {% else %} placeholder="ie@gmail.com" {% endif %}>
             </div>
             <div class="col-md-6">
               <label class="form-label">Oficio</label>
-              <input type="text" name="oficio" id="oficio" class="form-control" placeholder="OFICIO N° 246-2026/D-I.E. N° 1211" required>
+              <input type="text" name="oficio" id="oficio" class="form-control" required {% if solo_lectura %} placeholder="" disabled {% else %} placeholder="OFICIO N° 246-2026/D-I.E. N° 1211" {% endif %}>
             </div>
-            <div class="col-md-12">
+            <div class="col-md-12" id="grupo-detalle">
               <label class="form-label">Detalle</label>
-              <textarea name="detalle" id="detalle" class="form-control" rows="1" placeholder="Motivo de la observación"></textarea>
+              <textarea name="detalle" id="detalle" class="form-control" rows="1" {% if solo_lectura %} placeholder="" disabled {% else %} placeholder="Motivo de la observación" {% endif %}></textarea>
             </div>
-            
-            <div class="col-md-2">
-              <label class="form-label">Desde página</label>
-              <input type="number" name="pagina_inicio" class="form-control" min="1" placeholder="4">
+             {% if not solo_lectura %}
+            <div class="row g-3 d-none" id="grupo-validado">
+
+              <div class="col-md-2">
+                <label class="form-label">Desde página</label>
+                <input type="number" name="pagina_inicio" class="form-control" min="1" placeholder="4">
+              </div>
+
+              <div class="col-md-2">
+                <label class="form-label">Hasta página</label>
+                <input type="number" name="pagina_fin" class="form-control" min="1" placeholder="6">
+              </div>
+
+              <div class="col-md-8">
+                <label class="form-label">Subir R.D. de la I.E. (PDF)</label>
+                <input type="file" name="archivo_rd" class="form-control" accept="application/pdf">
+              </div>
+
             </div>
-            <div class="col-md-2">
-              <label class="form-label">Hasta página</label>
-              <input type="number" name="pagina_fin" class="form-control" min="1" placeholder="6">
-            </div>
-            <div class="col-md-8">
-              <label class="form-label">Subir R.D. de la I.E. (PDF)</label>
-              <input type="file" name="archivo_rd" class="form-control" accept="application/pdf">
-            </div>
+            {% endif %}
           </div>
         </div>
-
+            
         <!-- Footer -->
         <div class="modal-footer">
-          {% if session['charge'] == 'ADMIN' %}
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn btn-primary" {% if solo_lectura %}disabled{% endif %}>
             <i class="fa-solid fa-save me-1"></i> Guardar
           </button>
-          {% endif %}
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </div>
       </form>
