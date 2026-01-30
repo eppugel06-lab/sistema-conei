@@ -190,7 +190,8 @@
                                   data-correo="{{ exp.correo }}"
                                   data-oficio="{{ exp.oficio_ie }}"
                                   data-detalle="{{ exp.detalle }}"
-                                  data-archivo="{{ exp.pdf_resolucion }}">
+                                  data-archivo="{{ exp.pdf_resolucion }}"
+                                  data-es-admin="{{ '1' if session['charge'] == 'ADMIN' else '0' }}">
                             <i class="{{ 'fa-solid fa-pen-to-square' if es_admin else 'fa-regular fa-file' }}"></i>
                           </button>
                         </span>
